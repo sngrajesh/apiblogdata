@@ -36,7 +36,6 @@ const verifyAccessTokenAndAdmin = (req, res, next) => {
   });
 };
 
-
 module.exports = {
   verifyAccessToken,
   verifyAccessTokenAndAuthorization,

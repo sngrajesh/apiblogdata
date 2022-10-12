@@ -6,21 +6,36 @@ const User = require("../models/User");
 
 //Signup
 router.post("/signup", async (req, res) => {
-  const newUser = new User({
-    userName: req.body.username,
-    email: req.body.email,
-    phone: req.body.phone,
-    password: crypto.AES.encrypt(
-      req.body.password,
-      process.env.AUTH_SECRET_KEY
-    ).toString(),
-  });
   try {
-    const u = await newUser.save();
-    const { password, ...other } = u._doc;
-    res.send(other).status(201);
-  } catch (error) {
-    console.log(error);
+    User.find({ email: req.body.email })
+      .exec()
+      .then(async (user) => {
+        if (user.length >= 1) {
+          return res.status(409).send({
+            message: "Mail already exists",
+          });
+        } else {
+          const newUser = new User({
+            username: req.body.username,
+            email: req.body.email,
+            password: crypto.AES.encrypt(
+              req.body.password,
+              process.env.AUTH_SECRET_KEY
+            ).toString(),
+          });
+          try {
+            const u = await newUser.save();
+            const { password, ...other } = u._doc;
+            res.send(other).status(201);
+          } catch (err) {
+            err.message = "Something went wrong";
+            res.status(404).json( err );
+            return;
+          }
+        }
+      });
+  } catch (err) {
+    return res.status(500).json(err);
   }
 });
 
@@ -28,7 +43,7 @@ router.post("/signup", async (req, res) => {
 router.post("/signin", async (req, res) => {
   try {
     const user = await User.findOne({
-      userName: req.body.username,
+      email: req.body.email,
     });
     if (!user) {
       return res.status(404).send("Incorrect Credentials");
@@ -49,11 +64,11 @@ router.post("/signin", async (req, res) => {
       process.env.JWT_SECRET_KEY,
       { expiresIn: "7d" }
     );
-    const { password , ...other } = user._doc;
+    const { password, ...other } = user._doc;
 
-    res.send({...other , accessToken}).status(200);
-  } catch (error) {
-    console.log(error);
+    res.send({ ...other, accessToken }).status(200);
+  } catch (err) {
+    console.log(err);
   }
 });
 

@@ -1,9 +1,9 @@
 const router = require("express").Router();
 const Category = require("../models/Category");
 
-const { verifyAccessToken } = require("./verifyAccessToken");
+const { verifyAccessTokenAndAdmin } = require("./verifyAccessToken");
 
-router.post("/", verifyAccessToken, async (req, res) => {
+router.post("/", verifyAccessTokenAndAdmin, async (req, res) => {
   const newCat = new Category(req.body);
   try {
     const savedCat = await newCat.save();
@@ -19,6 +19,16 @@ router.get("/", async (req, res) => {
     res.status(200).json(cats);
   } catch (err) {
     res.status(500).json(err);
+  }
+});
+
+//Delete category
+router.delete("/:id", verifyAccessTokenAndAdmin, async (req, res) => {
+  try {
+    const deletedCategory = await Category.findByIdAndDelete(req.params.id);
+    res.status(200).json(deletedCategory);
+  } catch (error) {
+    res.status(500).json(error);
   }
 });
 

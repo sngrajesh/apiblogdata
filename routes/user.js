@@ -4,7 +4,6 @@ const crypto = require("crypto-js");
 const User = require("../models/User");
 
 const {
-  verifyAccessToken,
   verifyAccessTokenAndAuthorization,
   verifyAccessTokenAndAdmin,
 } = require("./verifyAccessToken");
@@ -26,44 +25,29 @@ router.put("/:id", verifyAccessTokenAndAuthorization, async (req, res) => {
       { new: true }
     );
     res.status(200).json(updatedUser);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
-
-//Get user with username and email
-// router.get("/:id", verifyAccessToken, async (req, res) => {
-//   try {
-//     const user = await User.findById(req.params.id);
-//     const { userName, email, createdAt, ...other } = user._doc;
-//     res.status(200).json({
-//         userName,
-//         email,
-//         createdAt,
-//     });
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// });
 
 //Delete user
 router.delete("/:id", verifyAccessTokenAndAuthorization, async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     res.status(200).json(deletedUser);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
 
 //Get user with all details
-router.get("/find/:id", verifyAccessTokenAndAdmin, async (req, res) => {
+router.get("/find/:id", verifyAccessTokenAndAuthorization, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     const { password, ...other } = user._doc;
     res.status(200).json(other);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
 
@@ -79,8 +63,8 @@ router.get("/find", verifyAccessTokenAndAdmin, async (req, res) => {
           .limit(5)
       : await User.find();
     res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
 
@@ -106,8 +90,8 @@ router.get("/stats", verifyAccessTokenAndAdmin, async (req, res) => {
       },
     ]);
     res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (err) {
+    res.status(500).json(err);
   }
 });
 
